@@ -970,7 +970,7 @@ func (r *Runner) allTemplatesRendered() bool {
 		// be default unrendered as we are still waiting for the
 		// specified period
 		if event.ForQuiescence {
-			continue
+			return false
 		}
 
 		// The template might already exist on disk with the exact contents, but
