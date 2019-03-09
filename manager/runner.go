@@ -306,8 +306,18 @@ func (r *Runner) Start() {
 			// If we are running in once mode and all our templates are rendered,
 			// then we should exit here.
 			if r.once {
-				log.Printf("[INFO] (runner) once mode and all templates rendered")
+				for len(r.quiescenceMap) > 0 {
+					tmpl := <-r.quiescenceCh
+					log.Printf("[DEBUG] (runner) once: received template %q from quiescence", tmpl.ID())
+					delete(r.quiescenceMap, tmpl.ID()) // Will force Run to render tmpl
 
+					if err := r.Run(); err != nil {
+						r.ErrCh <- err
+						return
+					}
+				}
+
+				log.Printf("[INFO] (runner) once mode and all templates rendered")
 				if r.child != nil {
 					r.stopDedup()
 					r.stopWatcher()
